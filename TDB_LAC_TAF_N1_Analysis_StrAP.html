@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord ATPerf – Analyse STR.A.P.®</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        /* Same styling as before … */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f7f9fc;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #375a7f 0%, #4c84c7 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px 10px 0 0;
+            margin: -20px -20px 20px -20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+
+        .header p {
+            margin: 4px 0 0;
+            font-size: 0.9em;
+        }
+
+        .kpi-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: #f8fafd;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            border-left: 4px solid #375a7f;
+        }
+
+        .kpi-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #375a7f;
+        }
+
+        .kpi-label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chart-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .action-plan {
+            background: #f1f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .action-item {
+            background: white;
+            margin: 12px 0;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+
+        .critical {
+            border-left-color: #e74c3c;
+        }
+
+        .high {
+            border-left-color: #f39c12;
+        }
+
+        .medium {
+            border-left-color: #f1c40f;
+        }
+
+        .cta {
+            background: #375a7f;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .cta h4 {
+            margin-top: 0;
+        }
+
+        .cta a {
+            color: #f1c40f;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🏭 Tableau de bord ATPerf – Goulots d’étranglement</h1>
+            <p>Analyse STR.A.P.® – LAC TAF N1 – Données : Nov 2021 à Jan 2025</p>
+        </div>
+
+        <div class="kpi-cards">
+            <div class="kpi-card">
+                <div class="kpi-label">Total tickets analysés</div>
+                <div class="kpi-value">3 499</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Taux de rebut</div>
+                <div class="kpi-value" style="color:#e74c3c;">57,8 %</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Tickets rebut</div>
+                <div class="kpi-value">2 023</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Gain potentiel annuel</div>
+                <div class="kpi-value" style="color:#27ae60;">1,2 M€</div>
+            </div>
+        </div>
+
+        <!-- Existing charts for equipment, causes, evolution, and OEE -->
+        <div class="chart-container">
+            <div class="chart">
+                <div id="equipements-chart"></div>
+            </div>
+            <div class="chart">
+                <div id="causes-chart"></div>
+            </div>
+        </div>
+        <div class="chart-container">
+            <div class="chart">
+                <div id="evolution-chart"></div>
+            </div>
+            <div class="chart">
+                <div id="oee-chart"></div>
+            </div>
+        </div>
+
+        <!-- New charts for problems vs causes and recurrence probability -->
+        <div class="chart-container">
+            <div class="chart">
+                <div id="problems-causes-chart"></div>
+            </div>
+            <div class="chart">
+                <div id="probability-chart"></div>
+            </div>
+        </div>
+
+        <div class="action-plan">
+            <h3>⚡ Plan d'action rapide STR.A.P.®</h3>
+            <div class="action-item critical">
+                <h4>Action #1 : Optimisation Morgan (2 semaines)</h4>
+                <p><strong>Objectif :</strong> réduire de 40 % les blocages et rebuts</p>
+                <p><strong>Actions :</strong> contrôles de serrage, nettoyage régulier des frisons, calibration des
+                    capteurs</p>
+            </div>
+            <div class="action-item high">
+                <h4>Action #2 : Paramétrage des cages (3 semaines)</h4>
+                <p><strong>Objectif :</strong> -30 % de défauts dimensionnels</p>
+                <p><strong>Actions :</strong> audit des réglages, création d’une base de paramètres optimaux, formation
+                    préventive</p>
+            </div>
+            <div class="action-item medium">
+                <h4>Action #3 : Contrôle des Bloc à fil (1 mois)</h4>
+                <p><strong>Objectif :</strong> -25 % de variations thermiques</p>
+                <p><strong>Actions :</strong> calibration des instruments, procédures de contrôle, mise en place
+                    d’alertes de dérive</p>
+            </div>
+        </div>
+        <div class="action-plan">
+            <h3>📊 Indicateurs de suivi STR.A.P.®</h3>
+
+            <div class="action-item">
+                <h4>Maintenance</h4>
+                <p><strong>KPIs :</strong> MTBF, MTTR, % interventions préventives, disponibilité machine.</p>
+                <p><strong>Objectif :</strong> Réduire les pannes récurrentes et les rebuts post-maintenance.</p>
+            </div>
+
+            <div class="action-item">
+                <h4>Usure Équipement</h4>
+                <p><strong>KPIs :</strong> Taux d’usure pièces critiques, % remplacements planifiés, taux de défaillance
+                    non détectée.</p>
+                <p><strong>Objectif :</strong> Anticiper l’usure et éviter les rebuts dus à dérive mécanique.</p>
+            </div>
+
+            <div class="action-item">
+                <h4>Qualité Matière</h4>
+                <p><strong>KPIs :</strong> % lots non conformes, % rebuts matière, conformité fournisseurs.</p>
+                <p><strong>Objectif :</strong> Garantir la conformité matière avant utilisation.</p>
+            </div>
+
+            <div class="action-item">
+                <h4>Réglage / Paramétrage</h4>
+                <p><strong>KPIs :</strong> Ajustements par série, % rebuts après réglage, taux de conformité du premier
+                    produit.</p>
+                <p><strong>Objectif :</strong> Stabiliser les réglages et limiter les dérives.</p>
+            </div>
+
+            <div class="action-item">
+                <h4>Nettoyage</h4>
+                <p><strong>KPIs :</strong> % conformité post-nettoyage, fréquence réelle vs planifiée, rebuts
+                    post-nettoyage.</p>
+                <p><strong>Objectif :</strong> Prévenir les contaminations et dérives.</p>
+            </div>
+
+            <div class="action-item">
+                <h4>Formation</h4>
+                <p><strong>KPIs :</strong> % opérateurs formés, % rebuts liés à erreur humaine, respect des procédures.
+                </p>
+                <p><strong>Objectif :</strong> Renforcer la compétence et la rigueur d’exécution.</p>
+            </div>
+
+            <div class="action-item critical">
+                <h4>🎯 Focus Rebut</h4>
+                <p><strong>Principales causes :</strong> capteurs mal calibrés, réglages instables, matière non
+                    conforme, nettoyage insuffisant.</p>
+                <p><strong>KPIs :</strong> Taux global de rebut, taux de récurrence, délai de détection, % réduction
+                    après action.</p>
+                <p><strong>Objectif :</strong> Identifier et éliminer les causes racines de non-qualité.</p>
+            </div>
+        </div>
+
+
+        <div class="cta">
+            <h4>📞 Prêt à transformer vos résultats ?</h4>
+            <p>Pour une analyse détaillée et pour intégrer cette démarche dans votre système de management,
+                contactez‑nous dès maintenant :</p>
+            <p><strong>Rachid Rabhi</strong><br>Managing Partner — ATPerf Conseil</p>
+            <p>📧 <a href="mailto:r.rabhi@atperf.com">r.rabhi@atperf.com</a> | 📞 <a
+                    href="tel:+33661409529">+33 6 61 40 95 29</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Données pour les équipements (inchangées)
+        const equipementsData = [{
+            x: ['MORGAN', 'BLOC A FIL', 'DUO', 'CAGE', 'D0', 'CR6', 'CR1', 'CR4', 'CR0'],
+            y: [753, 561, 378, 320, 181, 155, 152, 147, 138],
+            type: 'bar',
+            marker: {
+                color: ['#e74c3c', '#f39c12', '#f1c40f', '#27ae60', '#2980b9',
+                    '#9b59b6', '#e67e22', '#d35400', '#16a085', '#95a5a6']
+            }
+        }];
+
+        // Données pour la répartition des causes (inchangées)
+        const causesData = [{
+            labels: ['Maintenance', 'Paramétrage/Réglage', 'Qualité matière', 'Usure équipement', 'Formation'],
+            values: [397, 377, 174, 66, 48],
+            type: 'pie',
+            hole: 0.4,
+            marker: {
+                colors: ['#e74c3c', '#f39c12', '#27ae60', '#3498db', '#9b59b6']
+            }
+        }];
+
+        // Données d'évolution semestrielle (inchangées)
+        const evolutionData = [{
+            x: ['2021‑11', '2022‑05', '2022‑11', '2023‑05', '2023‑11', '2024‑05', '2024‑11'],
+            y: [6, 35, 348, 1033, 903, 556, 594],
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Tickets/6 mois',
+            line: { color: '#e74c3c', width: 3 }
+        }];
+
+        // Indicateur OEE (approximation)
+        const oeeData = [{
+            type: 'indicator',
+            mode: 'gauge+number+delta',
+            value: 42.2,
+            delta: { reference: 95 },
+            gauge: {
+                axis: { range: [0, 100] },
+                steps: [
+                    { range: [0, 60], color: '#fce1e4' },
+                    { range: [60, 80], color: '#f9e79f' },
+                    { range: [80, 100], color: '#d4efdf' }
+                ],
+                threshold: {
+                    line: { color: '#e74c3c', width: 4 },
+                    thickness: 0.75,
+                    value: 85
+                }
+            }
+        }];
+
+        // 📊 Données pour le graphique "Top 5 problèmes vs causes"
+        // Chaque objet représente une cause et contient les occurrences pour chaque problème
+        const problems = ['Rebut', 'Calibration', 'Outllage', 'Elevation', 'Montage-galet'];
+        const problemsCausesData = [
+            {
+                name: 'Maintenance',
+                x: problems,
+                y: [238, 95, 20, 20, 111],
+                type: 'bar'
+            },
+            {
+                name: 'Paramétrage/Réglage',
+                x: problems,
+                y: [369, 11, 26, 2, 32],
+                type: 'bar'
+            },
+            {
+                name: 'Qualité matière',
+                x: problems,
+                y: [110, 41, 1, 0, 13],
+                type: 'bar'
+            },
+            {
+                name: 'Usure équipement',
+                x: problems,
+                y: [37, 0, 96, 0, 23],
+                type: 'bar'
+            },
+            {
+                name: 'Formation',
+                x: problems,
+                y: [43, 35, 95, 89, 38],
+                type: 'bar'
+            }
+        ];
+
+        // 📈 Données pour la probabilité d'occurrence des problèmes dans les prochains mois
+        const probabilityData = [{
+            x: problems,
+            y: [86.7, 25.0, 19.5, 15.0, 30.3],
+            type: 'bar',
+            marker: {
+                color: ['#e74c3c', '#f39c12', '#f1c40f', '#27ae60', '#2980b9']
+            }
+        }];
+
+        // Configuration et rendu des graphiques
+        Plotly.newPlot('equipements-chart', equipementsData, {
+            title: 'Équipements les plus impactés (N1)',
+            xaxis: { title: 'Équipements / Zones' },
+            yaxis: { title: 'Occurrences' }
+        });
+
+        Plotly.newPlot('causes-chart', causesData, {
+            title: 'Répartition des familles de causes (N1)'
+        });
+
+        Plotly.newPlot('evolution-chart', evolutionData, {
+            title: 'Évolution semestrielle des tickets',
+            xaxis: { title: 'Période' },
+            yaxis: { title: 'Nombre de tickets' }
+        });
+
+        Plotly.newPlot('oee-chart', oeeData, {
+            title: 'OEE actuel vs cible (95 %)'
+        });
+
+        // Nouveau graphique : top 5 problèmes et leurs causes
+        Plotly.newPlot('problems-causes-chart', problemsCausesData, {
+            title: 'Top problèmes et principales causes (N1)',
+            barmode: 'stack',
+            xaxis: { title: 'Problèmes' },
+            yaxis: { title: 'Occurrences' }
+        });
+
+        // Nouveau graphique : probabilité de récurrence
+        Plotly.newPlot('probability-chart', probabilityData, {
+            title: 'Probabilité de récurrence des problèmes (prochain mois)',
+            xaxis: { title: 'Problèmes' },
+            yaxis: { title: 'Probabilité (%)' },
+            yaxis_range: [0, 100]
+        });
+    </script>
+</body>
+
+</html>
